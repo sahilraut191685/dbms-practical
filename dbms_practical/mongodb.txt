@@ -1,0 +1,52 @@
+CRUD Operations using MongoDB
+Design and implement basic Create, Read, Update, and Delete (CRUD) operations using
+MongoDB.
+Use the save method and logical operators wherever necessary.
+
+// USE DATABASE
+use libraryDB
+
+// CREATE (INSERT DOCUMENTS using save)
+db.books.save({ _id: 1, title: "SQL Basics", author: "ABC", price: 400 })
+db.books.save({ _id: 2, title: "MongoDB Guide", author: "XYZ", price: 600 })
+db.books.save({ _id: 3, title: "NodeJS", author: "PQR", price: 500 })
+
+// READ (FIND DOCUMENTS)
+db.books.find()
+
+// READ WITH CONDITION + LOGICAL OPERATORS
+db.books.find({
+    $and: [
+        { price: { $gt: 400 } },
+        { author: "XYZ" }
+    ]
+})
+
+// READ WITH OR
+db.books.find({
+    $or: [
+        { price: { $lt: 500 } },
+        { title: "NodeJS" }
+    ]
+})
+
+// UPDATE (MODIFY DOCUMENT)
+db.books.update(
+    { _id: 1 },
+    { $set: { price: 450 } }
+)
+
+// UPDATE MULTIPLE
+db.books.updateMany(
+    { price: { $gt: 400 } },
+    { $set: { category: "Tech" } }
+)
+
+// DELETE (REMOVE DOCUMENT)
+db.books.remove({ _id: 3 })
+
+// DELETE MULTIPLE
+db.books.remove({ price: { $lt: 500 } })
+
+// FINAL VIEW
+db.books.find()
