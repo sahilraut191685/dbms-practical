@@ -1,0 +1,167 @@
+Stored Function with Cursor for Aggregation Logic
+Create a reusable function to: (Use suitable data)
+1. Iterate through orders
+2. Calculate total sales per customer
+Store results in another collection customer_total
+
+
+-- CREATE TABLES
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    cust_id INT,
+    amount INT
+);
+
+CREATE TABLE customer_total (
+    cust_id INT,
+    total_sales INT
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO Orders VALUES (1, 101, 500);
+INSERT INTO Orders VALUES (2, 102, 700);
+INSERT INTO Orders VALUES (3, 101, 300);
+INSERT INTO Orders VALUES (4, 103, 900);
+INSERT INTO Orders VALUES (5, 102, 200);
+INSERT INTO Orders VALUES (6, 101, 400);
+
+-- STORED FUNCTION WITH CURSOR
+CREATE OR REPLACE FUNCTION calc_total_sales
+RETURN NUMBER
+IS
+    CURSOR c1 IS
+        SELECT cust_id, amount FROM Orders ORDER BY cust_id;
+
+    v_cust_id Orders.cust_id%TYPE;
+    v_amount Orders.amount%TYPE;
+
+    prev_id Orders.cust_id%TYPE := NULL;
+    total NUMBER := 0;
+BEGIN
+    OPEN c1;
+
+    LOOP
+        FETCH c1 INTO v_cust_id, v_amount;
+        EXIT WHEN c1%NOTFOUND;
+
+        IF prev_id IS NULL THEN
+            prev_id := v_cust_id;
+        END IF;
+
+        IF v_cust_id = prev_id THEN
+            total := total + v_amount;
+        ELSE
+            INSERT INTO customer_total VALUES (prev_id, total);
+            prev_id := v_cust_id;
+            total := v_amount;
+        END IF;
+    END LOOP;
+
+    IF prev_id IS NOT NULL THEN
+        INSERT INTO customer_total VALUES (prev_id, total);
+    END IF;
+
+    CLOSE c1;
+    RETURN 1;
+END;
+/
+
+-- EXECUTE FUNCTION
+SELECT calc_total_sales FROM dual;
+
+-- VIEW RESULT
+SELECT * FROM customer_total;
+
+
+
+
+Develop a Library Management System database to manage books and members. Create
+tables:
+a. Members (member_id, name, email) , Books (book_id, title, author, price)
+b. Borrow (borrow_id, member_id, book_id, date) ,
+Perform: INSERT records into all tables , UPDATE book price or member details , DELETE
+records for returned/lost books. Use:Arithmetic operations (price calculation with discount) ,
+Logical conditions (price > 500 AND author='XYZ') , Pattern matching (title LIKE '%SQL%') ,
+String functions (LOWER(), CONCAT()) , Set operators (INTERSECT or UNION for reports).
+
+
+-- CREATE TABLES
+CREATE TABLE Members (
+    member_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100)
+);
+
+CREATE TABLE Books (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(100),
+    author VARCHAR(50),
+    price INT
+);
+
+CREATE TABLE Borrow (
+    borrow_id INT PRIMARY KEY,
+    member_id INT,
+    book_id INT,
+    bdate DATE,
+    FOREIGN KEY (member_id) REFERENCES Members(member_id),
+    FOREIGN KEY (book_id) REFERENCES Books(book_id)
+);
+
+-- INSERT INTO MEMBERS
+INSERT INTO Members VALUES (1, 'Sahil', 'sahil@gmail.com');
+INSERT INTO Members VALUES (2, 'Rahul', 'rahul@gmail.com');
+INSERT INTO Members VALUES (3, 'Priya', 'priya@gmail.com');
+INSERT INTO Members VALUES (4, 'Amit', 'amit@gmail.com');
+INSERT INTO Members VALUES (5, 'Neha', 'neha@gmail.com');
+
+-- INSERT INTO BOOKS
+INSERT INTO Books VALUES (101, 'SQL Basics', 'ABC', 400);
+INSERT INTO Books VALUES (102, 'Advanced SQL', 'XYZ', 700);
+INSERT INTO Books VALUES (103, 'DBMS Concepts', 'XYZ', 550);
+INSERT INTO Books VALUES (104, 'Java Programming', 'DEF', 600);
+INSERT INTO Books VALUES (105, 'Python Guide', 'GHI', 450);
+
+-- INSERT INTO BORROW
+INSERT INTO Borrow VALUES (1, 1, 101, '2024-01-01');
+INSERT INTO Borrow VALUES (2, 2, 102, '2024-01-02');
+INSERT INTO Borrow VALUES (3, 3, 103, '2024-01-03');
+INSERT INTO Borrow VALUES (4, 1, 104, '2024-01-04');
+INSERT INTO Borrow VALUES (5, 4, 105, '2024-01-05');
+
+-- UPDATE BOOK PRICE
+UPDATE Books
+SET price = price - 50
+WHERE book_id = 102;
+
+-- UPDATE MEMBER EMAIL
+UPDATE Members
+SET email = 'sahil_new@gmail.com'
+WHERE member_id = 1;
+
+-- DELETE RECORD (RETURNED BOOK)
+DELETE FROM Borrow
+WHERE borrow_id = 5;
+
+-- ARITHMETIC OPERATION (DISCOUNT CALCULATION)
+SELECT book_id, title, price, price * 0.9 AS discounted_price
+FROM Books;
+
+-- LOGICAL CONDITIONS
+SELECT *
+FROM Books
+WHERE price > 500 AND author = 'XYZ';
+
+-- PATTERN MATCHING
+SELECT *
+FROM Books
+WHERE title LIKE '%SQL%';
+
+-- STRING FUNCTIONS
+SELECT LOWER(name) AS lower_name, CONCAT(name, ' - ', email) AS full_info
+FROM Members;
+
+-- SET OPERATOR (UNION)
+SELECT name FROM Members WHERE member_id < 3
+UNION
+SELECT name FROM Members WHERE member_id >= 3;

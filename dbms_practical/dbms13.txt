@@ -1,0 +1,75 @@
+Design a database to analyze student academic performance using aggregate functions.
+Create a table:
+1. Results (student_id, student_name, subject, marks)
+2. Insert at least 10–15 records with multiple subjects per student. Write SQL queries
+to:
+3. Calculate total marks and average marks of each student using aggregate functions
+(SUM(), AVG()).
+4. Display the maximum and minimum marks scored in each subject.
+5. Use GROUP BY to group data by student_id and subject.
+6. Use HAVING to:
+ Show students with average marks greater than 70
+ Display subjects where maximum marks > 90
+
+
+-- CREATE TABLE
+CREATE TABLE Results (
+    student_id INT,
+    student_name VARCHAR(50),
+    subject VARCHAR(50),
+    marks INT
+);
+
+-- INSERT DATA (15 records, multiple subjects per student)
+INSERT INTO Results VALUES (1, 'Sahil', 'Math', 85);
+INSERT INTO Results VALUES (1, 'Sahil', 'Science', 78);
+INSERT INTO Results VALUES (1, 'Sahil', 'English', 82);
+
+INSERT INTO Results VALUES (2, 'Rahul', 'Math', 65);
+INSERT INTO Results VALUES (2, 'Rahul', 'Science', 70);
+INSERT INTO Results VALUES (2, 'Rahul', 'English', 60);
+
+INSERT INTO Results VALUES (3, 'Priya', 'Math', 92);
+INSERT INTO Results VALUES (3, 'Priya', 'Science', 88);
+INSERT INTO Results VALUES (3, 'Priya', 'English', 95);
+
+INSERT INTO Results VALUES (4, 'Amit', 'Math', 55);
+INSERT INTO Results VALUES (4, 'Amit', 'Science', 68);
+INSERT INTO Results VALUES (4, 'Amit', 'English', 72);
+
+INSERT INTO Results VALUES (5, 'Neha', 'Math', 75);
+INSERT INTO Results VALUES (5, 'Neha', 'Science', 80);
+INSERT INTO Results VALUES (5, 'Neha', 'English', 78);
+
+-- 1. TOTAL & AVERAGE MARKS OF EACH STUDENT
+SELECT student_id, student_name,
+       SUM(marks) AS total_marks,
+       AVG(marks) AS avg_marks
+FROM Results
+GROUP BY student_id, student_name;
+
+-- 2. MAX & MIN MARKS IN EACH SUBJECT
+SELECT subject,
+       MAX(marks) AS max_marks,
+       MIN(marks) AS min_marks
+FROM Results
+GROUP BY subject;
+
+-- 3. GROUP BY STUDENT_ID AND SUBJECT
+SELECT student_id, subject,
+       SUM(marks) AS total_marks
+FROM Results
+GROUP BY student_id, subject;
+
+-- 4a. STUDENTS WITH AVG MARKS > 70
+SELECT student_id, student_name, AVG(marks) AS avg_marks
+FROM Results
+GROUP BY student_id, student_name
+HAVING AVG(marks) > 70;
+
+-- 4b. SUBJECTS WHERE MAX MARKS > 90
+SELECT subject, MAX(marks) AS max_marks
+FROM Results
+GROUP BY subject
+HAVING MAX(marks) > 90;
+

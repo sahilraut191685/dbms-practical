@@ -1,0 +1,124 @@
+Create a database : 1. employee (employee name, street, city) ,employee name is primary key
+1. works (employee name, company name, salary), 3. company (company name, city)
+,company name is primary key, 4. manages (employee name, manager name),
+Give an expression in SQL for each of the following queries.
+1. Find the names of all employees who work for First Bank Corporation.
+2. Find all employees who do not work for First Bank Coorporation
+3. Find the company that has most employees.
+4. Find all companies located in every in which small bank corporation is located
+5. Find details of employee having salary greater than 10,000.
+6. Update salary of all employees who work for First Bank Corporation by 10%.
+7. Find employee and their managers.
+8. Find the names, street and cities of all employees who work for First Bank Corporation
+And earn more than 10,000.
+9. Find those companies whose employees earn a higher salary,on average, than the average salary
+at First Bank Corporation.
+
+
+-- CREATE TABLES
+CREATE TABLE employee (
+    employee_name VARCHAR(50) PRIMARY KEY,
+    street VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50)
+);
+
+CREATE TABLE works (
+    employee_name VARCHAR(50),
+    company_name VARCHAR(50),
+    salary INT,
+    FOREIGN KEY (employee_name) REFERENCES employee(employee_name),
+    FOREIGN KEY (company_name) REFERENCES company(company_name)
+);
+
+CREATE TABLE manages (
+    employee_name VARCHAR(50),
+    manager_name VARCHAR(50),
+    FOREIGN KEY (employee_name) REFERENCES employee(employee_name),
+    FOREIGN KEY (manager_name) REFERENCES employee(employee_name)
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO employee VALUES ('Sahil', 'Street1', 'Pune');
+INSERT INTO employee VALUES ('Rahul', 'Street2', 'Mumbai');
+INSERT INTO employee VALUES ('Amit', 'Street3', 'Nagpur');
+INSERT INTO employee VALUES ('Priya', 'Street4', 'Delhi');
+INSERT INTO employee VALUES ('Neha', 'Street5', 'Pune');
+INSERT INTO employee VALUES ('Rohan', 'Street6', 'Mumbai');
+
+INSERT INTO company VALUES ('First Bank Corporation', 'Mumbai');
+INSERT INTO company VALUES ('Small Bank Corporation', 'Nagpur');
+INSERT INTO company VALUES ('Tech Corp', 'Pune');
+
+INSERT INTO works VALUES ('Sahil', 'First Bank Corporation', 15000);
+INSERT INTO works VALUES ('Rahul', 'First Bank Corporation', 9000);
+INSERT INTO works VALUES ('Amit', 'Small Bank Corporation', 12000);
+INSERT INTO works VALUES ('Priya', 'Tech Corp', 20000);
+INSERT INTO works VALUES ('Neha', 'First Bank Corporation', 18000);
+INSERT INTO works VALUES ('Rohan', 'Small Bank Corporation', 8000);
+
+INSERT INTO manages VALUES ('Sahil', 'Rahul');
+INSERT INTO manages VALUES ('Amit', 'Priya');
+INSERT INTO manages VALUES ('Neha', 'Sahil');
+
+-- 1. EMPLOYEES WORKING FOR FIRST BANK CORPORATION
+SELECT employee_name
+FROM works
+WHERE company_name = 'First Bank Corporation';
+
+-- 2. EMPLOYEES NOT WORKING FOR FIRST BANK CORPORATION
+SELECT employee_name
+FROM works
+WHERE company_name <> 'First Bank Corporation';
+
+-- 3. COMPANY WITH MOST EMPLOYEES
+SELECT company_name
+FROM works
+GROUP BY company_name
+ORDER BY COUNT(*) DESC
+LIMIT 1;
+
+-- 4. COMPANIES LOCATED IN EVERY CITY WHERE SMALL BANK CORPORATION IS LOCATED
+SELECT company_name
+FROM company
+WHERE city IN (
+    SELECT city
+    FROM company
+    WHERE company_name = 'Small Bank Corporation'
+);
+
+-- 5. EMPLOYEES HAVING SALARY > 10000
+SELECT e.employee_name, e.street, e.city, w.salary
+FROM employee e
+JOIN works w ON e.employee_name = w.employee_name
+WHERE w.salary > 10000;
+
+-- 6. UPDATE SALARY BY 10% (FIRST BANK CORPORATION)
+UPDATE works
+SET salary = salary * 1.10
+WHERE company_name = 'First Bank Corporation';
+
+-- 7. EMPLOYEES AND THEIR MANAGERS
+SELECT employee_name, manager_name
+FROM manages;
+
+-- 8. EMPLOYEES (NAME, STREET, CITY) WORKING FOR FBC WITH SALARY > 10000
+SELECT e.employee_name, e.street, e.city
+FROM employee e
+JOIN works w ON e.employee_name = w.employee_name
+WHERE w.company_name = 'First Bank Corporation'
+AND w.salary > 10000;
+
+-- 9. COMPANIES WITH AVG SALARY > AVG SALARY OF FBC
+SELECT company_name
+FROM works
+GROUP BY company_name
+HAVING AVG(salary) > (
+    SELECT AVG(salary)
+    FROM works
+    WHERE company_name = 'First Bank Corporation'
+);

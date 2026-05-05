@@ -1,0 +1,142 @@
+Improve Query Performance using Indexing, Consider a collection users: (Id, name,
+mailed, age, city)
+1. Create an index on the email field to improve search performance.
+2. Create a compound index on city and age.
+3. Query users from Mumbai aged above 20 efficiently.
+
+```sql
+-- COLLECTION: users (Id, name, email, age, city)
+
+-- 1. CREATE INDEX ON EMAIL
+CREATE INDEX idx_email ON users(email);
+
+-- 2. CREATE COMPOUND INDEX ON CITY AND AGE
+CREATE INDEX idx_city_age ON users(city, age);
+
+-- 3. QUERY USERS FROM MUMBAI AGED ABOVE 20
+SELECT *
+FROM users
+WHERE city = 'Mumbai' AND age > 20;
+```
+
+
+
+
+
+Create a database for a Student Course Management System.
+ Create the following tables with appropriate attributes and constraints:
+o Students
+o Courses
+o Enrollments
+ Insert at least 5 records in each table.
+Write SQL queries to:
+1 Display student names, course names, and marks using INNER JOIN.
+2 Display all students including those not enrolled in any course using LEFT JOIN.
+3 Display all courses including those with no enrolled students using RIGHT JOIN.
+4 Display all possible student–course combinations including unmatched records using FULL
+OUTER JOIN (or equivalent).
+5 Create a view named Student_Course_View to display Student Name, Course Name, and
+Marks.
+6 Create another view to display students who have scored more than 75 marks.
+7 Retrieve data from both created views.
+8 Drop any one of the created views.
+
+
+```sql
+-- CREATE TABLES
+CREATE TABLE Students (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Courses (
+    course_id INT PRIMARY KEY,
+    course_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Enrollments (
+    enroll_id INT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    marks INT,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+);
+
+-- INSERT DATA (at least 5 records each)
+INSERT INTO Students VALUES (1, 'Sahil');
+INSERT INTO Students VALUES (2, 'Rahul');
+INSERT INTO Students VALUES (3, 'Priya');
+INSERT INTO Students VALUES (4, 'Amit');
+INSERT INTO Students VALUES (5, 'Neha');
+
+INSERT INTO Courses VALUES (101, 'DBMS');
+INSERT INTO Courses VALUES (102, 'OS');
+INSERT INTO Courses VALUES (103, 'CN');
+INSERT INTO Courses VALUES (104, 'Java');
+INSERT INTO Courses VALUES (105, 'Python');
+
+INSERT INTO Enrollments VALUES (1, 1, 101, 85);
+INSERT INTO Enrollments VALUES (2, 2, 102, 70);
+INSERT INTO Enrollments VALUES (3, 3, 103, 90);
+INSERT INTO Enrollments VALUES (4, 1, 104, 60);
+INSERT INTO Enrollments VALUES (5, 4, 105, 78);
+
+-- 1. INNER JOIN
+SELECT s.name, c.course_name, e.marks
+FROM Students s
+INNER JOIN Enrollments e ON s.student_id = e.student_id
+INNER JOIN Courses c ON e.course_id = c.course_id;
+
+-- 2. LEFT JOIN
+SELECT s.name, c.course_name, e.marks
+FROM Students s
+LEFT JOIN Enrollments e ON s.student_id = e.student_id
+LEFT JOIN Courses c ON e.course_id = c.course_id;
+
+-- 3. RIGHT JOIN
+SELECT s.name, c.course_name, e.marks
+FROM Students s
+RIGHT JOIN Enrollments e ON s.student_id = e.student_id
+RIGHT JOIN Courses c ON e.course_id = c.course_id;
+
+-- 4. FULL OUTER JOIN (ORACLE / POSTGRES)
+SELECT s.name, c.course_name, e.marks
+FROM Students s
+FULL OUTER JOIN Enrollments e ON s.student_id = e.student_id
+FULL OUTER JOIN Courses c ON e.course_id = c.course_id;
+
+-- (FOR MYSQL USE THIS INSTEAD OF FULL OUTER JOIN)
+-- SELECT s.name, c.course_name, e.marks
+-- FROM Students s
+-- LEFT JOIN Enrollments e ON s.student_id = e.student_id
+-- LEFT JOIN Courses c ON e.course_id = c.course_id
+-- UNION
+-- SELECT s.name, c.course_name, e.marks
+-- FROM Students s
+-- RIGHT JOIN Enrollments e ON s.student_id = e.student_id
+-- RIGHT JOIN Courses c ON e.course_id = c.course_id;
+
+-- 5. CREATE VIEW
+CREATE VIEW Student_Course_View AS
+SELECT s.name, c.course_name, e.marks
+FROM Students s
+JOIN Enrollments e ON s.student_id = e.student_id
+JOIN Courses c ON e.course_id = c.course_id;
+
+-- 6. VIEW FOR MARKS > 75
+CREATE VIEW High_Scorers AS
+SELECT s.name, c.course_name, e.marks
+FROM Students s
+JOIN Enrollments e ON s.student_id = e.student_id
+JOIN Courses c ON e.course_id = c.course_id
+WHERE e.marks > 75;
+
+-- 7. RETRIEVE DATA FROM VIEWS
+SELECT * FROM Student_Course_View;
+SELECT * FROM High_Scorers;
+
+-- 8. DROP ONE VIEW
+DROP VIEW High_Scorers;
+```
+

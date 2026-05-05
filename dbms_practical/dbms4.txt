@@ -1,0 +1,135 @@
+Named PL/SQL Block: PL/SQL Stored Procedure and Stored Function. Write a Stored
+Procedure namely proc_Grade for the categorization of student. If marks scoredby students in
+examination is <=1500 and marks>=990 then student will be placed in distinction category if marks
+scored are between 989 and 900 category is first class, if marks 899 and 825 category is Higher
+Second Class. Write a PL/SQL block to use procedure created with above requirement.
+Stud_Marks(name, total_marks) Result(Roll,Name, Class)
+
+-- CREATE TABLES
+CREATE TABLE Stud_Marks (
+    roll INT PRIMARY KEY,
+    name VARCHAR(50),
+    total_marks INT
+);
+
+CREATE TABLE Result (
+    roll INT,
+    name VARCHAR(50),
+    class VARCHAR(50)
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO Stud_Marks VALUES (1, 'Sahil', 1200);
+INSERT INTO Stud_Marks VALUES (2, 'Rahul', 950);
+INSERT INTO Stud_Marks VALUES (3, 'Priya', 870);
+INSERT INTO Stud_Marks VALUES (4, 'Amit', 800);
+INSERT INTO Stud_Marks VALUES (5, 'Sneha', 1000);
+
+-- STORED PROCEDURE
+CREATE OR REPLACE PROCEDURE proc_Grade (
+    p_roll IN INT,
+    p_name IN VARCHAR2,
+    p_marks IN INT
+)
+IS
+    v_class VARCHAR2(50);
+BEGIN
+    IF p_marks BETWEEN 990 AND 1500 THEN
+        v_class := 'Distinction';
+    ELSIF p_marks BETWEEN 900 AND 989 THEN
+        v_class := 'First Class';
+    ELSIF p_marks BETWEEN 825 AND 899 THEN
+        v_class := 'Higher Second Class';
+    ELSE
+        v_class := 'Pass';
+    END IF;
+
+    INSERT INTO Result VALUES (p_roll, p_name, v_class);
+END;
+/
+
+-- PL/SQL BLOCK TO CALL PROCEDURE
+BEGIN
+    FOR rec IN (SELECT roll, name, total_marks FROM Stud_Marks) LOOP
+        proc_Grade(rec.roll, rec.name, rec.total_marks);
+    END LOOP;
+END;
+/
+
+-- VIEW RESULT
+SELECT * FROM Result;
+
+
+
+Design and implement a Student Course Management System database using SQL.
+Create tables such as: Student (rollno, name, address, phno, email_id, marks) , Courses (c_id,
+cname, rollno) using CREATE, ALTER, RENAME, TRUNCATE and DROP tables where
+required. Also, apply constraints: PRIMARY KEY on student and course IDs ,FOREIGN KEY in
+Course table, NOT NULL for essential fields (e.g., student name) , UNIQUE for email and CHECK
+for valid marks (0–100) . Insert at least 7 to 10 records into each table. Demonstrate constraint
+enforcement by attempting invalid insertions. Use ON DELETE CASCADE
+
+-- CREATE TABLES
+CREATE TABLE Student (
+    rollno INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    address VARCHAR(100),
+    phno VARCHAR(15),
+    email_id VARCHAR(100) UNIQUE,
+    marks INT CHECK (marks BETWEEN 0 AND 100)
+);
+
+CREATE TABLE Courses (
+    c_id INT PRIMARY KEY,
+    cname VARCHAR(50) NOT NULL,
+    rollno INT,
+    FOREIGN KEY (rollno) REFERENCES Student(rollno) ON DELETE CASCADE
+);
+
+-- INSERT STUDENT DATA (7–10 records)
+INSERT INTO Student VALUES (1, 'Sahil', 'Pune', '9876543210', 'sahil@gmail.com', 85);
+INSERT INTO Student VALUES (2, 'Rahul', 'Mumbai', '9876543211', 'rahul@gmail.com', 78);
+INSERT INTO Student VALUES (3, 'Priya', 'Delhi', '9876543212', 'priya@gmail.com', 92);
+INSERT INTO Student VALUES (4, 'Amit', 'Nagpur', '9876543213', 'amit@gmail.com', 66);
+INSERT INTO Student VALUES (5, 'Sneha', 'Pune', '9876543214', 'sneha@gmail.com', 88);
+INSERT INTO Student VALUES (6, 'Rohan', 'Nashik', '9876543215', 'rohan@gmail.com', 73);
+INSERT INTO Student VALUES (7, 'Neha', 'Aurangabad', '9876543216', 'neha@gmail.com', 81);
+
+-- INSERT COURSE DATA (7–10 records)
+INSERT INTO Courses VALUES (101, 'DBMS', 1);
+INSERT INTO Courses VALUES (102, 'OS', 2);
+INSERT INTO Courses VALUES (103, 'CN', 3);
+INSERT INTO Courses VALUES (104, 'Java', 4);
+INSERT INTO Courses VALUES (105, 'Python', 5);
+INSERT INTO Courses VALUES (106, 'AI', 6);
+INSERT INTO Courses VALUES (107, 'ML', 7);
+
+-- ALTER TABLE
+ALTER TABLE Student ADD age INT;
+ALTER TABLE Student MODIFY name VARCHAR(100);
+
+-- RENAME TABLE
+RENAME TABLE Courses TO Course_Details;
+
+-- CONSTRAINT VIOLATIONS
+-- UNIQUE violation (duplicate email)
+INSERT INTO Student VALUES (8, 'Test', 'Pune', '9999999999', 'sahil@gmail.com', 75);
+
+-- NOT NULL violation (name)
+INSERT INTO Student VALUES (9, NULL, 'Pune', '9999999998', 'test@gmail.com', 70);
+
+-- CHECK violation (marks out of range)
+INSERT INTO Student VALUES (10, 'Invalid', 'Pune', '9999999997', 'invalid@gmail.com', 150);
+
+-- FOREIGN KEY violation (invalid rollno)
+INSERT INTO Course_Details VALUES (108, 'Cloud', 99);
+
+-- ON DELETE CASCADE DEMO
+DELETE FROM Student WHERE rollno = 1;
+
+-- TRUNCATE TABLE
+TRUNCATE TABLE Course_Details;
+
+-- DROP TABLES
+DROP TABLE Course_Details;
+DROP TABLE Student;

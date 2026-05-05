@@ -1,0 +1,164 @@
+Develop a database for an Online Shopping System using SQL.
+Create tables such as: Customer (c_id, name, address, phno, email) ,Product (p_id, pname, c_id,
+price, qty).
+Using CREATE tables , ALTER to modify structure, RENAME any one table , TRUNCATE and
+DROP operations for testing . Also apply constraints: PRIMARY KEY for each table , FOREIGN
+KEY in product referencing Customers , NOT NULL for important fields (name, price) , UNIQUE
+for customer email or product code , CHECK for price > 0 and quantity ≥ 1
+Insert sample data (minimum 7 to 10 records per table), Test integrity constraints by inserting
+incorrect data.ON DELETE CASCADE.
+
+
+-- CREATE TABLES
+CREATE TABLE Customer (
+    c_id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    address VARCHAR(100),
+    phno VARCHAR(15),
+    email VARCHAR(100) UNIQUE
+);
+
+CREATE TABLE Product (
+    p_id INT PRIMARY KEY,
+    pname VARCHAR(50) NOT NULL,
+    c_id INT,
+    price INT CHECK (price > 0),
+    qty INT CHECK (qty >= 1),
+    FOREIGN KEY (c_id) REFERENCES Customer(c_id) ON DELETE CASCADE
+);
+
+-- INSERT INTO CUSTOMER (7–10 records)
+INSERT INTO Customer VALUES (1, 'Sahil', 'Pune', '9876543210', 'sahil@gmail.com');
+INSERT INTO Customer VALUES (2, 'Rahul', 'Mumbai', '9876543211', 'rahul@gmail.com');
+INSERT INTO Customer VALUES (3, 'Priya', 'Delhi', '9876543212', 'priya@gmail.com');
+INSERT INTO Customer VALUES (4, 'Amit', 'Nagpur', '9876543213', 'amit@gmail.com');
+INSERT INTO Customer VALUES (5, 'Sneha', 'Pune', '9876543214', 'sneha@gmail.com');
+INSERT INTO Customer VALUES (6, 'Rohan', 'Nashik', '9876543215', 'rohan@gmail.com');
+INSERT INTO Customer VALUES (7, 'Neha', 'Aurangabad', '9876543216', 'neha@gmail.com');
+
+-- INSERT INTO PRODUCT (7–10 records)
+INSERT INTO Product VALUES (101, 'Laptop', 1, 60000, 2);
+INSERT INTO Product VALUES (102, 'Mobile', 2, 20000, 5);
+INSERT INTO Product VALUES (103, 'Headphones', 3, 3000, 10);
+INSERT INTO Product VALUES (104, 'Keyboard', 4, 1500, 7);
+INSERT INTO Product VALUES (105, 'Mouse', 5, 800, 15);
+INSERT INTO Product VALUES (106, 'Monitor', 6, 12000, 3);
+INSERT INTO Product VALUES (107, 'Printer', 7, 9000, 4);
+
+-- ALTER TABLE
+ALTER TABLE Product ADD discount INT;
+
+-- RENAME TABLE
+RENAME TABLE Product TO Product_Details;
+
+-- CONSTRAINT VIOLATIONS
+-- UNIQUE violation (duplicate email)
+INSERT INTO Customer VALUES (8, 'Test', 'Pune', '9999999999', 'sahil@gmail.com');
+
+-- NOT NULL violation (name)
+INSERT INTO Customer VALUES (9, NULL, 'Pune', '9999999998', 'test@gmail.com');
+
+-- CHECK violation (price <= 0)
+INSERT INTO Product_Details VALUES (108, 'Invalid', 1, -100, 2, 0);
+
+-- CHECK violation (qty < 1)
+INSERT INTO Product_Details VALUES (109, 'Invalid2', 1, 500, 0, 0);
+
+-- FOREIGN KEY violation (invalid c_id)
+INSERT INTO Product_Details VALUES (110, 'Invalid3', 99, 500, 2, 0);
+
+-- ON DELETE CASCADE DEMO
+DELETE FROM Customer WHERE c_id = 1;
+
+-- TRUNCATE TABLE
+TRUNCATE TABLE Product_Details;
+
+-- DROP TABLES
+DROP TABLE Product_Details;
+DROP TABLE Customer;
+
+
+Design and implement a Banking Management System database to manage customer accounts
+and transactions.Create tables such as: Customers (cust_id, name, balance, city)
+Transactions (txn_id, cust_id, amount, txn_type)
+Perform: INSERT records for customers and transactions , UPDATE account balance after
+deposits/withdrawals , DELETE inactive customers . Use: Arithmetic operations (balance +
+amount) , Logical operators (AND, OR) , Pattern matching (LIKE 'A%') , String functions
+(UPPER(), LENGTH()) , Set operators (UNION to combine customer lists). 
+
+
+```sql id="bms_01"
+-- CREATE TABLES
+CREATE TABLE Customers (
+    cust_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    balance INT,
+    city VARCHAR(50)
+);
+
+CREATE TABLE Transactions (
+    txn_id INT PRIMARY KEY,
+    cust_id INT,
+    amount INT,
+    txn_type VARCHAR(20),
+    FOREIGN KEY (cust_id) REFERENCES Customers(cust_id)
+);
+
+-- INSERT INTO CUSTOMERS (8–10 records)
+INSERT INTO Customers VALUES (1, 'Amit', 50000, 'Pune');
+INSERT INTO Customers VALUES (2, 'Sahil', 70000, 'Mumbai');
+INSERT INTO Customers VALUES (3, 'Priya', 45000, 'Delhi');
+INSERT INTO Customers VALUES (4, 'Rahul', 30000, 'Pune');
+INSERT INTO Customers VALUES (5, 'Sneha', 60000, 'Nagpur');
+INSERT INTO Customers VALUES (6, 'Rohan', 20000, 'Nashik');
+INSERT INTO Customers VALUES (7, 'Neha', 80000, 'Pune');
+INSERT INTO Customers VALUES (8, 'Arjun', 10000, 'Delhi');
+
+-- INSERT INTO TRANSACTIONS
+INSERT INTO Transactions VALUES (101, 1, 5000, 'DEPOSIT');
+INSERT INTO Transactions VALUES (102, 2, 10000, 'WITHDRAW');
+INSERT INTO Transactions VALUES (103, 3, 7000, 'DEPOSIT');
+INSERT INTO Transactions VALUES (104, 4, 5000, 'WITHDRAW');
+INSERT INTO Transactions VALUES (105, 5, 8000, 'DEPOSIT');
+INSERT INTO Transactions VALUES (106, 6, 2000, 'WITHDRAW');
+INSERT INTO Transactions VALUES (107, 7, 10000, 'DEPOSIT');
+INSERT INTO Transactions VALUES (108, 8, 5000, 'WITHDRAW');
+
+-- UPDATE BALANCE (DEPOSIT)
+UPDATE Customers
+SET balance = balance + 5000
+WHERE cust_id = 1;
+
+-- UPDATE BALANCE (WITHDRAW)
+UPDATE Customers
+SET balance = balance - 10000
+WHERE cust_id = 2;
+
+-- DELETE INACTIVE CUSTOMERS (balance < 15000)
+DELETE FROM Customers
+WHERE balance < 15000;
+
+-- ARITHMETIC OPERATION (VIEW UPDATED BALANCE)
+SELECT cust_id, name, balance, balance + 1000 AS bonus_balance
+FROM Customers;
+
+-- LOGICAL OPERATORS (AND, OR)
+SELECT * FROM Customers
+WHERE city = 'Pune' AND balance > 40000;
+
+SELECT * FROM Customers
+WHERE city = 'Delhi' OR balance > 60000;
+
+-- PATTERN MATCHING (LIKE)
+SELECT * FROM Customers
+WHERE name LIKE 'A%';
+
+-- STRING FUNCTIONS
+SELECT UPPER(name) AS upper_name, LENGTH(name) AS name_length
+FROM Customers;
+
+-- SET OPERATOR (UNION)
+SELECT name FROM Customers WHERE city = 'Pune'
+UNION
+SELECT name FROM Customers WHERE city = 'Delhi';
+```

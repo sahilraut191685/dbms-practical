@@ -1,0 +1,169 @@
+Solve Below Queries: Use Set operations, Tuple Variable and Order by clause
+1. Find all customers who have a loan, an account, or both:
+2. Find all customers who have both a loan and an account.
+3. Find all customers who have an account but no loan.
+4. Find the customer names and their loan numbers and amount for all customers having a
+loan at some branch using tuple variable
+5. Find the names of all branches that have greater assets than some branch located in
+Brooklyn using tuple variable
+6. List in alphabetic order the names of all customers having a loan in Perryridge branch
+Use Depositor and borrower relation with appropriate data” Create table and insert 5 rows
+
+
+```sql
+-- CREATE TABLES
+CREATE TABLE Customer (
+    cname VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE Depositor (
+    cname VARCHAR(50),
+    accno INT,
+    FOREIGN KEY (cname) REFERENCES Customer(cname)
+);
+
+CREATE TABLE Borrower (
+    cname VARCHAR(50),
+    loanno INT,
+    amount INT,
+    bname VARCHAR(50),
+    FOREIGN KEY (cname) REFERENCES Customer(cname)
+);
+
+CREATE TABLE Branch (
+    bname VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50),
+    assets INT
+);
+
+-- INSERT DATA (5 rows each)
+INSERT INTO Customer VALUES ('Sahil');
+INSERT INTO Customer VALUES ('Rahul');
+INSERT INTO Customer VALUES ('Amit');
+INSERT INTO Customer VALUES ('Priya');
+INSERT INTO Customer VALUES ('Neha');
+
+INSERT INTO Depositor VALUES ('Sahil', 101);
+INSERT INTO Depositor VALUES ('Rahul', 102);
+INSERT INTO Depositor VALUES ('Amit', 103);
+INSERT INTO Depositor VALUES ('Priya', 104);
+INSERT INTO Depositor VALUES ('Neha', 105);
+
+INSERT INTO Borrower VALUES ('Sahil', 201, 5000, 'Perryridge');
+INSERT INTO Borrower VALUES ('Rahul', 202, 7000, 'Downtown');
+INSERT INTO Borrower VALUES ('Amit', 203, 3000, 'Perryridge');
+INSERT INTO Borrower VALUES ('Priya', 204, 9000, 'Brooklyn');
+INSERT INTO Borrower VALUES ('Neha', 205, 4000, 'Perryridge');
+
+INSERT INTO Branch VALUES ('Perryridge', 'New York', 500000);
+INSERT INTO Branch VALUES ('Downtown', 'Chicago', 300000);
+INSERT INTO Branch VALUES ('Brooklyn', 'Brooklyn', 400000);
+INSERT INTO Branch VALUES ('Uptown', 'Boston', 600000);
+INSERT INTO Branch VALUES ('Midtown', 'Dallas', 350000);
+
+-- 1. CUSTOMERS HAVING LOAN OR ACCOUNT (UNION)
+SELECT cname FROM Depositor
+UNION
+SELECT cname FROM Borrower;
+
+-- 2. CUSTOMERS HAVING BOTH LOAN AND ACCOUNT (INTERSECT)
+SELECT cname FROM Depositor
+INTERSECT
+SELECT cname FROM Borrower;
+
+-- 3. CUSTOMERS HAVING ACCOUNT BUT NO LOAN (EXCEPT)
+SELECT cname FROM Depositor
+EXCEPT
+SELECT cname FROM Borrower;
+
+-- 4. CUSTOMER NAME, LOAN NO, AMOUNT (TUPLE VARIABLE)
+SELECT b.cname, b.loanno, b.amount
+FROM Borrower b;
+
+-- 5. BRANCHES WITH ASSETS GREATER THAN SOME BRANCH IN BROOKLYN
+SELECT b1.bname
+FROM Branch b1
+WHERE b1.assets > ANY (
+    SELECT b2.assets
+    FROM Branch b2
+    WHERE b2.city = 'Brooklyn'
+);
+
+-- 6. CUSTOMERS HAVING LOAN IN PERRYRIDGE (ALPHABETICAL ORDER)
+SELECT cname
+FROM Borrower
+WHERE bname = 'Perryridge'
+ORDER BY cname;
+```
+
+
+
+Write a named PL/SQL block using a Stored Procedure to categorize students based on
+their total marks.
+Consider the following tables:
+o Stud_Marks (name, total_marks)
+o Result (roll, name, class)
+Create a stored procedure named proc_Grade to assign a class to students based on their
+marks:
+ Marks 990 to 1500 → Distinction
+ Marks 900 to 989 → First Class
+ Marks 825 to 899 → Higher Second Class
+ Create the Stored Procedure (proc_Grade) to categorize students
+ Insert the categorized data into the Result table
+ Write a PL/SQL block to call the procedure
+
+```sql
+-- CREATE TABLES
+CREATE TABLE Stud_Marks (
+    roll INT PRIMARY KEY,
+    name VARCHAR2(50),
+    total_marks INT
+);
+
+CREATE TABLE Result (
+    roll INT,
+    name VARCHAR2(50),
+    class VARCHAR2(50)
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO Stud_Marks VALUES (1, 'Sahil', 1200);
+INSERT INTO Stud_Marks VALUES (2, 'Rahul', 950);
+INSERT INTO Stud_Marks VALUES (3, 'Priya', 870);
+INSERT INTO Stud_Marks VALUES (4, 'Amit', 800);
+INSERT INTO Stud_Marks VALUES (5, 'Neha', 1000);
+
+-- STORED PROCEDURE
+CREATE OR REPLACE PROCEDURE proc_Grade (
+    p_roll IN INT,
+    p_name IN VARCHAR2,
+    p_marks IN INT
+)
+IS
+    v_class VARCHAR2(50);
+BEGIN
+    IF p_marks BETWEEN 990 AND 1500 THEN
+        v_class := 'Distinction';
+    ELSIF p_marks BETWEEN 900 AND 989 THEN
+        v_class := 'First Class';
+    ELSIF p_marks BETWEEN 825 AND 899 THEN
+        v_class := 'Higher Second Class';
+    ELSE
+        v_class := 'Pass';
+    END IF;
+
+    INSERT INTO Result VALUES (p_roll, p_name, v_class);
+END;
+/
+
+-- PL/SQL BLOCK TO CALL PROCEDURE
+BEGIN
+    FOR rec IN (SELECT roll, name, total_marks FROM Stud_Marks) LOOP
+        proc_Grade(rec.roll, rec.name, rec.total_marks);
+    END LOOP;
+END;
+/
+
+-- VIEW RESULT
+SELECT * FROM Result;
+```

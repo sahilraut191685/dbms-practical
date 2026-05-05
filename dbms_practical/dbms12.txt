@@ -1,0 +1,49 @@
+Design and demonstrate transaction handling in a Banking System using TCL commands.
+Consider the following Scenario:
+A customer wants to transfer money from one account to another. The transaction must ensure data
+consistency.
+Tasks:Start a transaction using START TRANSACTION, Deduct amount from Sender's account,
+Create a SAVEPOINT after deduction, Credit the same amount to Receiver's account, Simulate an
+error condition (e.g., insufficient balance or system failure), Use ROLLBACK to revert to the
+savepoint if an error occurs. If all operations are successful, use COMMIT to permanently save
+changes.
+
+
+```sql
+-- CREATE TABLE
+CREATE TABLE Accounts (
+    acc_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    balance INT
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO Accounts VALUES (1, 'Sahil', 5000);
+INSERT INTO Accounts VALUES (2, 'Rahul', 3000);
+
+-- START TRANSACTION
+START TRANSACTION;
+
+-- STEP 1: DEDUCT AMOUNT FROM SENDER
+UPDATE Accounts
+SET balance = balance - 2000
+WHERE acc_id = 1;
+
+-- SAVEPOINT AFTER DEDUCTION
+SAVEPOINT after_deduct;
+
+-- STEP 2: CREDIT AMOUNT TO RECEIVER
+UPDATE Accounts
+SET balance = balance + 2000
+WHERE acc_id = 2;
+
+-- SIMULATE ERROR (e.g., insufficient balance or system issue)
+-- Suppose error detected → rollback
+-- ROLLBACK TO after_deduct;
+
+-- IF EVERYTHING IS SUCCESSFUL
+COMMIT;
+
+-- CHECK RESULT
+SELECT * FROM Accounts;
+```

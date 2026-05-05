@@ -1,0 +1,168 @@
+Create a table Employees (emp_id, emp_name, salary, dept_id) and Departments (dept_id,
+dept_name). Use Appropriate Keys
+1. Insert at least 8–10 records in the Employees table and 3–5 records in
+Departments.
+2. Write a query to display employees who earn more than the average salary.
+3. Write a query to find the employee(s) with the highest salary.
+4. Write a query to display employees whose salary is greater than the average
+salary of their department (correlated subquery).
+5. Write a query to display employees working in departments where the maximum
+salary is greater than 60,000.
+6. Write a query using NOT IN to find employees who are not assigned to any
+department.
+7. Write a query using EXISTS to display employees who belong to departments
+located in a specific condition.
+
+
+
+-- CREATE TABLES
+CREATE TABLE Departments (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(50)
+);
+
+CREATE TABLE Employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    salary INT,
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES Departments(dept_id)
+);
+
+-- INSERT INTO DEPARTMENTS (3–5 records)
+INSERT INTO Departments VALUES (1, 'IT');
+INSERT INTO Departments VALUES (2, 'HR');
+INSERT INTO Departments VALUES (3, 'Finance');
+INSERT INTO Departments VALUES (4, 'Sales');
+
+-- INSERT INTO EMPLOYEES (8–10 records)
+INSERT INTO Employees VALUES (101, 'Sahil', 70000, 1);
+INSERT INTO Employees VALUES (102, 'Rahul', 45000, 2);
+INSERT INTO Employees VALUES (103, 'Priya', 80000, 3);
+INSERT INTO Employees VALUES (104, 'Amit', 60000, 1);
+INSERT INTO Employees VALUES (105, 'Sneha', 55000, 2);
+INSERT INTO Employees VALUES (106, 'Rohan', 90000, 3);
+INSERT INTO Employees VALUES (107, 'Neha', 30000, 4);
+INSERT INTO Employees VALUES (108, 'Kiran', 65000, 1);
+INSERT INTO Employees VALUES (109, 'Arjun', 40000, NULL);
+INSERT INTO Employees VALUES (110, 'Meena', 75000, 3);
+
+-- 2. EMPLOYEES WITH SALARY > AVERAGE SALARY
+SELECT * 
+FROM Employees
+WHERE salary > (SELECT AVG(salary) FROM Employees);
+
+-- 3. EMPLOYEE(S) WITH HIGHEST SALARY
+SELECT * 
+FROM Employees
+WHERE salary = (SELECT MAX(salary) FROM Employees);
+
+-- 4. SALARY > AVG OF THEIR DEPARTMENT (CORRELATED SUBQUERY)
+SELECT *
+FROM Employees e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM Employees
+    WHERE dept_id = e.dept_id
+);
+
+-- 5. EMPLOYEES IN DEPARTMENTS WHERE MAX SALARY > 60000
+SELECT *
+FROM Employees
+WHERE dept_id IN (
+    SELECT dept_id
+    FROM Employees
+    GROUP BY dept_id
+    HAVING MAX(salary) > 60000
+);
+
+-- 6. EMPLOYEES NOT ASSIGNED TO ANY DEPARTMENT
+SELECT *
+FROM Employees
+WHERE dept_id NOT IN (SELECT dept_id FROM Departments)
+   OR dept_id IS NULL;
+
+-- 7. USING EXISTS (EMPLOYEES IN SPECIFIC DEPARTMENT CONDITION, e.g., IT)
+SELECT *
+FROM Employees e
+WHERE EXISTS (
+    SELECT 1
+    FROM Departments d
+    WHERE d.dept_id = e.dept_id
+      AND d.dept_name = 'IT'
+);
+
+
+Create a table Employee with attributes emp_id, emp_name, department, and salary. Insert
+at least 8–10 records into the table. Write a PL/SQL program using a TRIGGER to ensure
+that no employee can be inserted with a salary less than 10,000, and use a CURSOR to
+display all employee details along with the total salary of all employees.
+
+
+
+-- CREATE TABLE
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    department VARCHAR(50),
+    salary INT
+);
+
+-- INSERT RECORDS (8–10)
+INSERT INTO Employee VALUES (1, 'Sahil', 'IT', 20000);
+INSERT INTO Employee VALUES (2, 'Rahul', 'HR', 15000);
+INSERT INTO Employee VALUES (3, 'Priya', 'Finance', 18000);
+INSERT INTO Employee VALUES (4, 'Amit', 'IT', 22000);
+INSERT INTO Employee VALUES (5, 'Sneha', 'HR', 17000);
+INSERT INTO Employee VALUES (6, 'Rohan', 'Finance', 25000);
+INSERT INTO Employee VALUES (7, 'Neha', 'IT', 30000);
+INSERT INTO Employee VALUES (8, 'Kiran', 'HR', 12000);
+
+-- TRIGGER (SALARY >= 10000)
+CREATE OR REPLACE TRIGGER trg_salary_check
+BEFORE INSERT ON Employee
+FOR EACH ROW
+BEGIN
+    IF :NEW.salary < 10000 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Salary must be at least 10000');
+    END IF;
+END;
+/
+
+-- TEST TRIGGER (WILL FAIL)
+INSERT INTO Employee VALUES (9, 'Test', 'IT', 5000);
+
+-- ENABLE OUTPUT
+SET SERVEROUTPUT ON;
+
+-- CURSOR PROGRAM
+DECLARE
+    CURSOR emp_cursor IS
+        SELECT emp_id, emp_name, department, salary FROM Employee;
+
+    v_id Employee.emp_id%TYPE;
+    v_name Employee.emp_name%TYPE;
+    v_dept Employee.department%TYPE;
+    v_salary Employee.salary%TYPE;
+
+    total_salary INT := 0;
+BEGIN
+    OPEN emp_cursor;
+
+    LOOP
+        FETCH emp_cursor INTO v_id, v_name, v_dept, v_salary;
+        EXIT WHEN emp_cursor%NOTFOUND;
+
+        DBMS_OUTPUT.PUT_LINE('ID: ' || v_id ||
+                             ' Name: ' || v_name ||
+                             ' Dept: ' || v_dept ||
+                             ' Salary: ' || v_salary);
+
+        total_salary := total_salary + v_salary;
+    END LOOP;
+
+    CLOSE emp_cursor;
+
+    DBMS_OUTPUT.PUT_LINE('Total Salary: ' || total_salary);
+END;
+/

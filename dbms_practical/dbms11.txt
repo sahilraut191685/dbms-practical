@@ -1,0 +1,153 @@
+Develop a Library Management System database to manage books and members. Create
+tables: Members (member_id, name, email) , Books (book_id, title, author, price), Borrow
+(borrow_id, member_id, book_id, date) ,Create roles: librarian and assistant use: GRANT full
+access to librarian , GRANT limited access to assistant (SELECT only) , REVOKE permissions
+where needed. Apply TCL commands: START TRANSACTION, Issue a book (insert into Borrow
++ update stock) , Create SAVEPOINT before updating stock , ROLLBACK if book not available ,
+COMMIT after successful issue
+
+
+```sql id="lib_tcl_roles"
+-- CREATE TABLES
+CREATE TABLE Members (
+    member_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100)
+);
+
+CREATE TABLE Books (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(100),
+    author VARCHAR(50),
+    price INT,
+    stock INT
+);
+
+CREATE TABLE Borrow (
+    borrow_id INT PRIMARY KEY,
+    member_id INT,
+    book_id INT,
+    bdate DATE,
+    FOREIGN KEY (member_id) REFERENCES Members(member_id),
+    FOREIGN KEY (book_id) REFERENCES Books(book_id)
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO Members VALUES (1, 'Sahil', 'sahil@gmail.com');
+INSERT INTO Members VALUES (2, 'Rahul', 'rahul@gmail.com');
+INSERT INTO Members VALUES (3, 'Priya', 'priya@gmail.com');
+
+INSERT INTO Books VALUES (101, 'SQL Basics', 'ABC', 400, 5);
+INSERT INTO Books VALUES (102, 'Advanced SQL', 'XYZ', 700, 0);
+INSERT INTO Books VALUES (103, 'DBMS Concepts', 'XYZ', 550, 3);
+
+-- ROLES
+CREATE ROLE librarian;
+CREATE ROLE assistant;
+
+-- GRANT PERMISSIONS
+GRANT ALL PRIVILEGES ON Members TO librarian;
+GRANT ALL PRIVILEGES ON Books TO librarian;
+GRANT ALL PRIVILEGES ON Borrow TO librarian;
+
+GRANT SELECT ON Members TO assistant;
+GRANT SELECT ON Books TO assistant;
+GRANT SELECT ON Borrow TO assistant;
+
+-- REVOKE EXAMPLE
+REVOKE SELECT ON Borrow FROM assistant;
+
+-- TCL TRANSACTION (ISSUE BOOK)
+START TRANSACTION;
+
+-- INSERT BORROW RECORD
+INSERT INTO Borrow VALUES (1, 1, 101, CURRENT_DATE);
+
+-- SAVEPOINT BEFORE STOCK UPDATE
+SAVEPOINT before_stock;
+
+-- CHECK & UPDATE STOCK
+UPDATE Books
+SET stock = stock - 1
+WHERE book_id = 101 AND stock > 0;
+
+-- IF NO ROW UPDATED (BOOK NOT AVAILABLE) → ROLLBACK
+-- (In real DB use condition; here manual check assumed)
+-- ROLLBACK TO before_stock;
+
+-- COMMIT AFTER SUCCESS
+COMMIT;
+```
+
+
+
+Develop a database to analyze sales performance of a company.
+Create a table: Sales (sale_id, product_name, region, quantity, price)
+Insert at least 10–15 records covering multiple products and regions.
+Write SQL queries to:
+1. Calculate total sales amount (SUM(quantity * price)) for each product.
+2. Find average sales per region using AVG().
+3. Identify highest and lowest sales using MAX() and MIN().
+4. Use GROUP BY to group data by product_name and region.
+5. Use HAVING to:
+ Display products with total sales > 5000
+ Show regions where average sales < 1000
+
+
+```sql
+-- CREATE TABLE
+CREATE TABLE Sales (
+    sale_id INT PRIMARY KEY,
+    product_name VARCHAR(50),
+    region VARCHAR(50),
+    quantity INT,
+    price INT
+);
+
+-- INSERT DATA (10–15 records)
+INSERT INTO Sales VALUES (1, 'Laptop', 'Pune', 2, 50000);
+INSERT INTO Sales VALUES (2, 'Mobile', 'Mumbai', 5, 20000);
+INSERT INTO Sales VALUES (3, 'Laptop', 'Delhi', 1, 52000);
+INSERT INTO Sales VALUES (4, 'Tablet', 'Pune', 3, 15000);
+INSERT INTO Sales VALUES (5, 'Mobile', 'Delhi', 4, 18000);
+INSERT INTO Sales VALUES (6, 'Laptop', 'Mumbai', 2, 51000);
+INSERT INTO Sales VALUES (7, 'Tablet', 'Nagpur', 6, 14000);
+INSERT INTO Sales VALUES (8, 'Mobile', 'Pune', 3, 21000);
+INSERT INTO Sales VALUES (9, 'Laptop', 'Nagpur', 1, 48000);
+INSERT INTO Sales VALUES (10, 'Tablet', 'Mumbai', 2, 16000);
+INSERT INTO Sales VALUES (11, 'Mobile', 'Nagpur', 4, 19000);
+INSERT INTO Sales VALUES (12, 'Laptop', 'Pune', 3, 50000);
+
+-- 1. TOTAL SALES PER PRODUCT
+SELECT product_name, SUM(quantity * price) AS total_sales
+FROM Sales
+GROUP BY product_name;
+
+-- 2. AVERAGE SALES PER REGION
+SELECT region, AVG(quantity * price) AS avg_sales
+FROM Sales
+GROUP BY region;
+
+-- 3. HIGHEST AND LOWEST SALES
+SELECT MAX(quantity * price) AS highest_sale,
+       MIN(quantity * price) AS lowest_sale
+FROM Sales;
+
+-- 4. GROUP BY PRODUCT AND REGION
+SELECT product_name, region, SUM(quantity * price) AS total_sales
+FROM Sales
+GROUP BY product_name, region;
+
+-- 5a. PRODUCTS WITH TOTAL SALES > 5000
+SELECT product_name, SUM(quantity * price) AS total_sales
+FROM Sales
+GROUP BY product_name
+HAVING SUM(quantity * price) > 5000;
+
+-- 5b. REGIONS WITH AVERAGE SALES < 1000
+SELECT region, AVG(quantity * price) AS avg_sales
+FROM Sales
+GROUP BY region
+HAVING AVG(quantity * price) < 1000;
+```
+

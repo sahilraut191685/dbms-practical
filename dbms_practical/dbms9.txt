@@ -1,0 +1,149 @@
+Stored Function with Cursor for Aggregation Logic
+Create a reusable function to: (Use suitable data)
+1. Iterate through orders
+2. Calculate total sales per customer
+3. Store results in another collection customer_total
+
+-- SAMPLE TABLES
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    cust_id INT,
+    amount INT
+);
+
+CREATE TABLE customer_total (
+    cust_id INT,
+    total_sales INT
+);
+
+-- INSERT SAMPLE DATA
+INSERT INTO Orders VALUES (1, 101, 500);
+INSERT INTO Orders VALUES (2, 102, 700);
+INSERT INTO Orders VALUES (3, 101, 300);
+INSERT INTO Orders VALUES (4, 103, 900);
+INSERT INTO Orders VALUES (5, 102, 200);
+INSERT INTO Orders VALUES (6, 101, 400);
+
+-- STORED FUNCTION USING CURSOR
+CREATE OR REPLACE FUNCTION calc_total_sales
+RETURN NUMBER
+IS
+    CURSOR order_cursor IS
+        SELECT cust_id, amount FROM Orders ORDER BY cust_id;
+
+    v_cust_id Orders.cust_id%TYPE;
+    v_amount Orders.amount%TYPE;
+
+    prev_cust_id Orders.cust_id%TYPE := NULL;
+    total NUMBER := 0;
+BEGIN
+    OPEN order_cursor;
+
+    LOOP
+        FETCH order_cursor INTO v_cust_id, v_amount;
+        EXIT WHEN order_cursor%NOTFOUND;
+
+        IF prev_cust_id IS NULL THEN
+            prev_cust_id := v_cust_id;
+        END IF;
+
+        IF v_cust_id = prev_cust_id THEN
+            total := total + v_amount;
+        ELSE
+            INSERT INTO customer_total VALUES (prev_cust_id, total);
+            prev_cust_id := v_cust_id;
+            total := v_amount;
+        END IF;
+    END LOOP;
+
+    -- insert last customer
+    IF prev_cust_id IS NOT NULL THEN
+        INSERT INTO customer_total VALUES (prev_cust_id, total);
+    END IF;
+
+    CLOSE order_cursor;
+
+    RETURN 1;
+END;
+/
+
+-- EXECUTE FUNCTION
+SELECT calc_total_sales FROM dual;
+
+-- VIEW RESULT
+SELECT * FROM customer_total;
+
+
+
+
+SQL Queries for Data Manipulation, Access Control, and Transactions Design and run SQL
+queries to demonstrate the following:
+Data Manipulation (DML): Use SQL statements to INSERT, UPDATE, and DELETE records.
+Apply arithmetic, logical, set operators, pattern matching, and string functions
+
+
+
+-- CREATE TABLE
+CREATE TABLE Employees (
+    emp_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    salary INT,
+    city VARCHAR(50)
+);
+
+-- INSERT (DML)
+INSERT INTO Employees VALUES (1, 'Sahil', 50000, 'Pune');
+INSERT INTO Employees VALUES (2, 'Rahul', 40000, 'Mumbai');
+INSERT INTO Employees VALUES (3, 'Priya', 60000, 'Delhi');
+INSERT INTO Employees VALUES (4, 'Amit', 30000, 'Pune');
+INSERT INTO Employees VALUES (5, 'Neha', 70000, 'Mumbai');
+
+-- UPDATE (DML)
+UPDATE Employees
+SET salary = salary + 5000
+WHERE emp_id = 1;
+
+-- DELETE (DML)
+DELETE FROM Employees
+WHERE emp_id = 4;
+
+-- ARITHMETIC OPERATION
+SELECT emp_id, name, salary, salary + 1000 AS bonus_salary
+FROM Employees;
+
+-- LOGICAL OPERATORS (AND, OR)
+SELECT *
+FROM Employees
+WHERE city = 'Mumbai' AND salary > 45000;
+
+SELECT *
+FROM Employees
+WHERE city = 'Pune' OR salary > 60000;
+
+-- PATTERN MATCHING (LIKE)
+SELECT *
+FROM Employees
+WHERE name LIKE 'S%';
+
+-- STRING FUNCTIONS
+SELECT UPPER(name) AS upper_name, LENGTH(name) AS name_length
+FROM Employees;
+
+-- SET OPERATORS (UNION)
+SELECT name FROM Employees WHERE city = 'Pune'
+UNION
+SELECT name FROM Employees WHERE city = 'Mumbai';
+
+-- TRANSACTIONS
+SAVEPOINT sp1;
+
+UPDATE Employees SET salary = salary + 2000 WHERE emp_id = 2;
+
+ROLLBACK TO sp1;
+
+COMMIT;
+
+-- ACCESS CONTROL
+GRANT SELECT, INSERT, UPDATE ON Employees TO PUBLIC;
+
+REVOKE INSERT ON Employees FROM PUBLIC;
